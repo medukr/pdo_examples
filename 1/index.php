@@ -10,4 +10,6 @@ $db = new Database($config['db']);
 
 $queryToDB = $db->query("SELECT * FROM `users` WHERE `id` > :id", ['id' => 1]);
 
+$db->closeConnection();
+
 print_r($queryToDB);

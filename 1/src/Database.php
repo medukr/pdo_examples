@@ -90,6 +90,7 @@ class Database
             $this->statement->setFetchMode(PDO::FETCH_CLASS, 'model\User', [1]);
 
             $this->statement->execute();
+
         } catch (PDOException $e) {
             exit('Error init: ' . $e->getMessage());
         }
