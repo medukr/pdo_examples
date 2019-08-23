@@ -1,0 +1,16 @@
+{
+    "name": "andrii/1",
+    "authors": [
+        {
+            "name": "medukr",
+            "email": "andrii.demydyuk@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DevStart\\": "src",
+            "model\\": "model"
+        }
+    },
+    "require": {}
+}
