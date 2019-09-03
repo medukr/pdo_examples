@@ -6,9 +6,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $config = require_once 'config.php';
 
-$db = new Database($config['db']);
+$db = new Database($config);
 
-$queryToDB = $db->query("SELECT * FROM `users` WHERE `id` > :id", ['id' => 1]);
+$queryToDB = $db->query("select * from users where id > 3");
 
 $db->closeConnection();
 

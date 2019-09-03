@@ -53,11 +53,17 @@ class Database
         $this->connect();
     }
 
-    private function connect(){
-        $dbn = 'mysql:dbname=' . $this->settings['dbname'] . ';host=' . $this->settings['hosts'];
+    private function connect()
+    {
+
+        $dsn = 'sqlite:';
+        $path_to_db = dirname(__FILE__, 2). $this->settings['path_to_db'];
+
 
         try {
-            $this->pdo = new PDO($dbn, $this->settings['user'], $this->settings['password'], [PDO::MYSQL_ATTR_COMPRESS => 'SET NAMES ' . $this->settings['charset']]);
+
+            $this->pdo = new PDO($dsn . $path_to_db);
+            $this->checkDb();
 
             #Disable emulations and we can now log
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -65,11 +71,28 @@ class Database
 
             $this->isConnected = true;
         } catch (PDOException $e) {
-            exit( "Error connect: " . $e->getMessage());
+            print_r( $e->getTrace());
+            exit("Error connect: " . $e->getMessage());
         }
     }
 
-    public function closeConnection(){
+    private function checkDb(){
+        if (!filesize( dirname(__FILE__, 2). '/db/users.sqlite3')) {
+            try {
+                $sql = "CREATE TABLE users(
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_name TEXT)";
+
+                if (!$this->pdo->exec($sql)) throw new \Exception('CREATE user ERROR');
+            } catch (\Exception $e) {
+                die($e->getMessage());
+            }
+        }
+    }
+
+
+    public function closeConnection()
+    {
         $this->pdo = null;
     }
 
@@ -77,7 +100,8 @@ class Database
      * @param string $query
      * @param array $parameters
      */
-    private function init(string $query, array $parameters = []){
+    private function init(string $query, array $parameters = [])
+    {
         if (!$this->isConnected) $this->connect();
 
         try {
@@ -102,20 +126,21 @@ class Database
      * @param array $parameters
      * @return void
      */
-    private function bind(array $parameters):void {
+    private function bind(array $parameters): void
+    {
         if (!empty($parameters)) {
             $columns = array_keys($parameters);
 
-            foreach ($columns as $i => &$column){
+            foreach ($columns as $i => &$column) {
                 $this->parameters[] = [
-                    ':'. $column,
+                    ':' . $column,
                     $parameters[$column]
                 ];
             }
 
 
-            if (!empty($this->parameters)){
-                foreach ($this->parameters as $value){
+            if (!empty($this->parameters)) {
+                foreach ($this->parameters as $value) {
 
                     if (is_int($value[1])) $type = PDO::PARAM_INT;
                     elseif (is_bool($value[1])) $type = PDO::PARAM_BOOL;
@@ -140,10 +165,10 @@ class Database
 
         $this->init($query, $parameters);
 
-        $rawStatement = explode( ' ', preg_replace("/\s+|\t+|\n+/", " ", $query));
+        $rawStatement = explode(' ', preg_replace("/\s+|\t+|\n+/", " ", $query));
         $statement = strtolower($rawStatement[0]);
 
-        try{
+        try {
 
             if ($statement === 'select' || $statement === 'show') {
 //                return $this->statement->fetchObject('model\User', ['test_parameter']);
